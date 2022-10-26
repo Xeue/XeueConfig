@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Small utility for creating and managing node configs",
   "main": "config.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
