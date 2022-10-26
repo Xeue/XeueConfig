@@ -1,0 +1,25 @@
+{
+  "name": "xeue-config",
+  "version": "1.0.0",
+  "description": "Small utility for creating and managing node configs",
+  "main": "config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Xeue/XeueConfig.git"
+  },
+  "keywords": [
+    "node"
+  ],
+  "author": "Sam Chilton",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Xeue/XeueConfig/issues"
+  },
+  "homepage": "https://github.com/Xeue/XeueConfig#readme",
+  "dependencies": {
+    "readline-sync": "^1.4.10"
+  }
+}
