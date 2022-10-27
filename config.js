@@ -112,7 +112,7 @@ function askQuestion(key) {
 			output = input
 			if (typeof required[key] !== 'undefined') {
 				if (required[key].length > 0 ) {
-					while (!required[key].includes(config[key])) {
+					while (!required[key].includes(output)) {
 						log(`Invalid value for ${logs.y}${key}${logs.reset} entered, valid values are: ${logs.dim}(${required[key].join(', ')})${logs.reset}`, ['H', '', logs.c])
 						let input = await retryQuestion()
 						if (input == 'false') input = false
