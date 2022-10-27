@@ -156,16 +156,6 @@ function userInput(callBack) {
 		console.log(`${logs.reset}[ User Input ] ${logs.w}  USER:${logs.reset} ${logs.c}${command}`)
 
 		switch (command) {
-		case 'config':
-			await config.fromCLI(__dirname + '/config.conf')
-			logs.setConf({
-				'createLogFile': config.get('createLogFile'),
-				'logsFileName': 'CreditsLogging',
-				'configLocation': __dirname,
-				'loggingLevel': config.get('loggingLevel'),
-				'debugLineNum': config.get('debugLineNum')
-			})
-			break
 		case 'exit':
 		case 'quit':
 		case 'q': {
