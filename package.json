@@ -22,6 +22,6 @@
   "homepage": "https://github.com/Xeue/XeueConfig#readme",
   "dependencies": {
     "readline-sync": "^1.4.10",
-    "xeue-logs": "^1.2.0"
+    "xeue-logs": "^1.2.1"
   }
 }
