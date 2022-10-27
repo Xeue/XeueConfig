@@ -186,6 +186,7 @@ function userInput(callBack) {
 }
 
 function doExitCheck() {
+	logs.pause()
 	const exitReader = readline.createInterface(process.stdin, process.stdout)
 	logs.force('Are you sure you want to exit? (y, n)', ['H', '', logs.r])
 	exitReader.on('SIGINT', () => {
@@ -196,11 +197,17 @@ function doExitCheck() {
 	})
 	exitReader.question(`${logs.reset}[ ${logs.c}User Input${logs.w} ] ${logs.r}      |${logs.reset} ${logs.c}`, (input) => {
 		exitReader.close()
+		if (input == '') {
+			readline.moveCursor(process.stdout, 0, -1)
+			readline.clearLine(process.stdout, 1)
+			console.log(`${logs.reset}[ ${logs.c}User Input${logs.w} ] ${logs.r}      |${logs.reset} ${logs.dim}NaN${logs.reset}`)
+		}
 		if (input.match(/^y(es)?$/i) || input == '') {
 			logs.force('Exiting', ['H','',logs.r])
 			process.exit()
 		} else {
 			logs.force('Exit canceled', ['H','',logs.g])
+			logs.resume();
 			return userInput()
 		}
 	})
