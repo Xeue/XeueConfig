@@ -70,8 +70,8 @@ const config = {
 export default config
 
 async function fromCLI(filePath = false) {
-	log(`Entering configuration 
-	`, ['H', 'CONFIG', logs.c])
+	log(`Entering configuration`, ['H', 'CONFIG', logs.c])
+	log(``, ['H', '', logs.c])
 	for (const key in required) {
 		if (Object.hasOwnProperty.call(required, key)) {
 			const question = typeof questions[key] === 'undefined' ? 'Please enter a value for' : questions[key]
@@ -85,22 +85,30 @@ async function fromCLI(filePath = false) {
 		}
 	}
 	if (filePath) {
-		log(`
-Saving configuration to ${logs.c}${filePath}${logs.reset}`, ['H', '', logs.c])
+		log(``, ['H', '', logs.c])
+		log(`Saving configuration to ${logs.c}${filePath}${logs.reset}`, ['H', '', logs.c])
 		fs.writeFileSync(filePath, JSON.stringify(config.all()))
 	}
-	log(`
-Finished configuration`, ['H', '', logs.c])
+	log(``, ['H', '', logs.c])
+	log(`Finished configuration`, ['H', 'CONFIG', logs.c])
 }
 
 function askQuestion(key) {
-	const configReader = readline.createInterface(process.stdin, process.stdout)
+	const configReader = readline.createInterface({
+		input: process.stdin,
+		output: process.stdout,
+		prompt: `${logs.reset}[ User Input ] ${logs.c}      | `
+	})
 	let output
 	return new Promise ((resolve) => {
-		configReader.question(`${logs.reset}[ User Input ] ${logs.c}      :${logs.reset} ${logs.c}`, async (input) => {
+		console.log(`${logs.reset}[ User Input ] ${logs.c}      |${logs.reset} ${logs.dim}${defaults[key]}${logs.reset}${logs.c}`)
+		readline.moveCursor(process.stdout, 0, -1)
+		readline.moveCursor(process.stdout, 23, 0)
+		configReader.on('line', async (input)=>{
 			configReader.close();
 			if (input == 'false') input = false
 			if (input == 'true') input = true
+			if (input == '') input = defaults[key]
 			output = input
 			if (typeof required[key] !== 'undefined') {
 				if (required[key].length > 0 ) {
@@ -114,14 +122,18 @@ function askQuestion(key) {
 				}
 			}
 			resolve(output)
-		});
+		})
 	})
 }
 
 function retryQuestion() {
-	const retryReader = readline.createInterface(process.stdin, process.stdout)
+	const retryReader = readline.createInterface({
+		input: process.stdin,
+		output: process.stdout,
+		prompt: `${logs.reset}[ User Input ] ${logs.c}      | `
+	})
 	return new Promise ((resolve) => {
-		retryReader.question(`${logs.reset}[ User Input ] ${logs.c}      :${logs.reset} ${logs.c}`, (output) => {
+		retryReader.question(`${logs.reset}[ User Input ] ${logs.c}      |${logs.reset} ${logs.c}`, (output) => {
 			retryReader.close()
 			resolve(output)
 		})
