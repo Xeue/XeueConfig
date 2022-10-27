@@ -187,26 +187,41 @@ function userInput(callBack) {
 
 function doExitCheck() {
 	logs.pause()
-	const exitReader = readline.createInterface(process.stdin, process.stdout)
+	const exitReader = readline.createInterface({
+		input: process.stdin,
+		output: process.stdout,
+		prompt: `${logs.reset}[ ${logs.c}User Input${logs.w} ] ${logs.r}      : ${logs.c}`
+	})
+
 	logs.force('Are you sure you want to exit? (y, n)', ['H', '', logs.r])
+	console.log(`${logs.reset}[ ${logs.c}User Input${logs.w} ] ${logs.r}      :${logs.reset} ${logs.dim}yes${logs.reset}${logs.c}`)
+	readline.moveCursor(process.stdout, 0, -1)
+	readline.moveCursor(process.stdout, 23, 0)
+
 	exitReader.on('SIGINT', () => {
 		exitReader.close()
 		console.log()
+		readline.moveCursor(process.stdout, 0, -1)
+		readline.clearLine(process.stdout, 1)
+		console.log(`${logs.reset}[ ${logs.c}User Input${logs.w} ] ${logs.r}      |${logs.reset} ${logs.c}yes${logs.reset}`)
 		logs.force('Exiting', ['H','',logs.r])
 		process.exit()
 	})
-	exitReader.question(`${logs.reset}[ ${logs.c}User Input${logs.w} ] ${logs.r}      |${logs.reset} ${logs.c}`, (input) => {
+	exitReader.on('line', async (input) => {
 		exitReader.close()
 		if (input == '') {
 			readline.moveCursor(process.stdout, 0, -1)
 			readline.clearLine(process.stdout, 1)
-			console.log(`${logs.reset}[ ${logs.c}User Input${logs.w} ] ${logs.r}      |${logs.reset} ${logs.dim}NaN${logs.reset}`)
+			console.log(`${logs.reset}[ ${logs.c}User Input${logs.w} ] ${logs.r}      |${logs.reset} ${logs.c}yes${logs.reset}`)
 		}
 		if (input.match(/^y(es)?$/i) || input == '') {
-			logs.force('Exiting', ['H','',logs.r])
+			logs.force('Exiting', ['H','SERVER',logs.r])
 			process.exit()
 		} else {
-			logs.force('Exit canceled', ['H','',logs.g])
+			readline.moveCursor(process.stdout, 0, -1)
+			readline.clearLine(process.stdout, 1)
+			console.log(`${logs.reset}[ ${logs.c}User Input${logs.w} ] ${logs.g}      |${logs.reset} ${logs.c}${input}${logs.reset}`)
+			logs.force('Exit canceled', ['H','SERVER',logs.g])
 			logs.resume();
 			return userInput()
 		}
