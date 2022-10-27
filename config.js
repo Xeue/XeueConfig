@@ -4,6 +4,7 @@ import readline from 'readline'
 
 const defaults = {}
 const required = {}
+const dependacies = {}
 const questions = {}
 
 const config = {
@@ -25,6 +26,8 @@ const config = {
 	},
 
 	fromCLI: fromCLI,
+
+	userInput: userInput,
 
 	set: (property, value) => {
 		config[property] = typeof value === 'undefined' ? defaults[property] : value
@@ -53,9 +56,10 @@ const config = {
 		defaults[property] = value
 	},
 
-	require: (property, values, question) => {
+	require: (property, values, question, dependacy) => {
 		required[property] = values
 		if (typeof question !== 'undefined') questions[property] = question
+		if (typeof dependacy !== 'undefined') dependacies[property] = dependacy
 	},
 
 	print: () => {
@@ -74,14 +78,17 @@ async function fromCLI(filePath = false) {
 	log(``, ['H', '', logs.c])
 	for (const key in required) {
 		if (Object.hasOwnProperty.call(required, key)) {
-			const question = typeof questions[key] === 'undefined' ? 'Please enter a value for' : questions[key]
-			log(`${question} (${logs.y}${key}${logs.reset})`, ['H', '', logs.c])
-			if (typeof required[key] !== 'undefined') {
-				if (required[key].length > 0 ) {
-					log(`${logs.dim}(${required[key].join(', ')})${logs.reset}`, ['H', '', logs.c])
+			const [dependant, value] = typeof dependacies[key] === 'undefined' ? [undefined, undefined] : dependacies[key]
+			if (typeof dependant === 'undefined' || config.get(dependant) == value) {
+				const question = typeof questions[key] === 'undefined' ? 'Please enter a value for' : questions[key]
+				log(`${question} (${logs.y}${key}${logs.reset})`, ['H', '', logs.c])
+				if (typeof required[key] !== 'undefined') {
+					if (required[key].length > 0 ) {
+						log(`${logs.dim}(${required[key].join(', ')})${logs.reset}`, ['H', '', logs.c])
+					}
 				}
+				config[key] = await askQuestion(key)
 			}
-			config[key] = await askQuestion(key)
 		}
 	}
 	if (filePath) {
@@ -137,5 +144,72 @@ function retryQuestion() {
 			retryReader.close()
 			resolve(output)
 		})
+	})
+}
+
+function userInput(callBack) {
+	const reader = readline.createInterface(process.stdin, process.stdout)
+	reader.on('line', async function (command) {
+		reader.close()
+		readline.moveCursor(process.stdout, 0, -1)
+		readline.clearLine(process.stdout, 1)
+		console.log(`${logs.reset}[ User Input ] ${logs.w}  USER:${logs.reset} ${logs.c}${command}`)
+
+		switch (command) {
+		case 'config':
+			await config.fromCLI(__dirname + '/config.conf')
+			logs.setConf({
+				'createLogFile': config.get('createLogFile'),
+				'logsFileName': 'CreditsLogging',
+				'configLocation': __dirname,
+				'loggingLevel': config.get('loggingLevel'),
+				'debugLineNum': config.get('debugLineNum')
+			})
+			break
+		case 'exit':
+		case 'quit':
+		case 'q': {
+			doExitCheck()
+			break
+		}
+		default:
+			if (typeof callBack == 'function') {
+				const valid = await callBack(command)
+				if (!valid) {
+					log('User entered invalid command, ignoring')
+				}
+			} else {
+				log('User entered invalid command, ignoring')
+			}
+		}
+		userInput(callBack)
+	})
+	
+	reader.on('SIGINT', () => {
+		reader.close()
+		reader.removeAllListeners()
+		doExitCheck()
+	})
+	return reader
+}
+
+function doExitCheck() {
+	const exitReader = readline.createInterface(process.stdin, process.stdout)
+	log('Are you sure you want to exit? (y, n)', ['H', '', logs.r])
+	exitReader.on('SIGINT', () => {
+		exitReader.close()
+		console.log()
+		log('Exiting', ['H','',logs.r])
+		process.exit()
+	})
+	exitReader.question(`${logs.reset}[ User Input ] ${logs.r}      |${logs.reset} ${logs.c}`, (input) => {
+		exitReader.close()
+		if (input.match(/^y(es)?$/i) || input == '') {
+			log('Exiting', ['H','',logs.r])
+			process.exit()
+		} else {
+			log('Exit canceled', ['H','',logs.g])
+			return userInput()
+		}
 	})
 }
