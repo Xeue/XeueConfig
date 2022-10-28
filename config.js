@@ -65,7 +65,7 @@ const config = {
 	print: () => {
 		for (const key in config.all()) {
 			if (Object.hasOwnProperty.call(config.all(), key)) {
-				log(`Configuration option ${logs.y}${key}${logs.reset} has been set to: ${logs.c}${config.get(key)}${logs.reset}`, ['H', 'CONFIG', logs.c])
+				logs.force(`Configuration option ${logs.y}${key}${logs.reset} has been set to: ${logs.c}${config.get(key)}${logs.reset}`, ['H', 'CONFIG', logs.c])
 			}
 		}
 	}
@@ -79,18 +79,32 @@ async function fromCLI(filePath = false) {
 	for (const key in required) {
 		if (Object.hasOwnProperty.call(required, key)) {
 			const [dependant, value] = typeof dependacies[key] === 'undefined' ? [undefined, undefined] : dependacies[key]
-			if (typeof dependant === 'undefined' || config.get(dependant) == value) {
+			if (typeof dependant === 'undefined' || config.get(dependant) == value) { // If question has no dependancies or the dependancies are already met
 				const question = typeof questions[key] === 'undefined' ? 'Please enter a value for' : questions[key]
-				logs.force(`${question} (${logs.y}${key}${logs.reset})`, ['H', '', logs.c])
-				if (typeof required[key] !== 'undefined') {
+				logs.force(`${question} (${logs.y}${key}${logs.reset})`, ['H', '', logs.c]) // Ask question
+				if (typeof required[key] !== 'undefined') { // If choices are specified print them
 					if (required[key].length > 0 ) {
 						logs.force(`${logs.dim}(${required[key].join(', ')})${logs.reset}`, ['H', '', logs.c])
 					}
 				}
-				config[key] = await askQuestion(key)
+
+				const [onInput] = logs.input(config.get(key))
+				let input = await onInput
+				if (typeof required[key] !== 'undefined') {
+					if (required[key].length > 0 ) {
+						while (!required[key].includes(input)) {
+							logs.force(`Invalid value for ${logs.y}${key}${logs.reset} entered, valid values are: ${logs.dim}(${required[key].join(', ')})${logs.reset}`, ['H', '', logs.c])
+							const [onInput] = logs.input()
+							input = await onInput
+						}
+					}
+				}
+				config[key] = input
 			}
 		}
 	}
+	logs.force(``, ['H', '', logs.c])
+	config.print()
 	if (filePath) {
 		logs.force(``, ['H', '', logs.c])
 		logs.force(`Saving configuration to ${logs.c}${filePath}${logs.reset}`, ['H', '', logs.c])
@@ -100,63 +114,15 @@ async function fromCLI(filePath = false) {
 	logs.force(`Finished configuration`, ['H', 'CONFIG', logs.c])
 }
 
-function askQuestion(key) {
-	const configReader = readline.createInterface({
-		input: process.stdin,
-		output: process.stdout,
-		prompt: `${logs.reset}[ ${logs.c}User Input${logs.w} ] ${logs.c}      | `
-	})
-	let output
-	return new Promise ((resolve) => {
-		console.log(`${logs.reset}[ ${logs.c}User Input${logs.w} ] ${logs.c}      |${logs.reset} ${logs.dim}${defaults[key]}${logs.reset}${logs.c}`)
-		readline.moveCursor(process.stdout, 0, -1)
-		readline.moveCursor(process.stdout, 23, 0)
-		configReader.on('line', async (input)=>{
-			configReader.close();
-			if (input == 'false') input = false
-			if (input == 'true') input = true
-			if (input == '') input = defaults[key]
-			output = input
-			if (typeof required[key] !== 'undefined') {
-				if (required[key].length > 0 ) {
-					while (!required[key].includes(output)) {
-						logs.force(`Invalid value for ${logs.y}${key}${logs.reset} entered, valid values are: ${logs.dim}(${required[key].join(', ')})${logs.reset}`, ['H', '', logs.c])
-						let input = await retryQuestion()
-						if (input == 'false') input = false
-						if (input == 'true') input = true
-						output = input
-					}
-				}
-			}
-			resolve(output)
-		})
-	})
-}
-
-function retryQuestion() {
-	const retryReader = readline.createInterface({
-		input: process.stdin,
-		output: process.stdout,
-		prompt: `${logs.reset}[ ${logs.c}User Input${logs.w} ] ${logs.c}      | `
-	})
-	return new Promise ((resolve) => {
-		retryReader.question(`${logs.reset}[ ${logs.c}User Input${logs.w} ] ${logs.c}      |${logs.reset} ${logs.c}`, (output) => {
-			retryReader.close()
-			resolve(output)
-		})
-	})
-}
-
 function userInput(callBack) {
-	const reader = readline.createInterface(process.stdin, process.stdout)
-	reader.on('line', async function (command) {
-		reader.close()
-		readline.moveCursor(process.stdout, 0, -1)
-		readline.clearLine(process.stdout, 1)
-		console.log(`${logs.reset}[ ${logs.c}User Input${logs.w} ] ${logs.w}  USER:${logs.reset} ${logs.c}${command}`)
-		logs.pause()
 
-		switch (command) {
+	const [onInput, reader] = logs.silentInput()
+
+	onInput.then(async (input) => {
+		logs.pause()
+		console.log(`${logs.reset}[ ${logs.c}User Input${logs.w} ]       ${logs.c}| ${input}${logs.reset}`)
+
+		switch (input) {
 		case 'exit':
 		case 'quit':
 		case 'q': {
@@ -165,7 +131,7 @@ function userInput(callBack) {
 		}
 		default:
 			if (typeof callBack == 'function') {
-				const valid = await callBack(command)
+				const valid = await callBack(input)
 				if (!valid) {
 					logs.force('User entered invalid command, ignoring')
 				}
@@ -173,57 +139,41 @@ function userInput(callBack) {
 				logs.force('User entered invalid command, ignoring')
 			}
 		}
-		logs.resume()
 		userInput(callBack)
+		logs.resume()
 	})
-	
+
 	reader.on('SIGINT', () => {
 		reader.close()
 		reader.removeAllListeners()
 		doExitCheck()
 	})
-	return reader
 }
 
 function doExitCheck() {
 	logs.pause()
-	const exitReader = readline.createInterface({
-		input: process.stdin,
-		output: process.stdout,
-		prompt: `${logs.reset}[ ${logs.c}User Input${logs.w} ] ${logs.r}      : ${logs.c}`
-	})
 
 	logs.force('Are you sure you want to exit? (y, n)', ['H', '', logs.r])
-	console.log(`${logs.reset}[ ${logs.c}User Input${logs.w} ] ${logs.r}      :${logs.reset} ${logs.dim}yes${logs.reset}${logs.c}`)
-	readline.moveCursor(process.stdout, 0, -1)
-	readline.moveCursor(process.stdout, 23, 0)
 
-	exitReader.on('SIGINT', () => {
-		exitReader.close()
-		console.log()
-		readline.moveCursor(process.stdout, 0, -1)
-		readline.clearLine(process.stdout, 1)
-		console.log(`${logs.reset}[ ${logs.c}User Input${logs.w} ] ${logs.r}      |${logs.reset} ${logs.c}yes${logs.reset}`)
-		logs.force('Exiting', ['H','',logs.r])
-		process.exit()
-	})
-	exitReader.on('line', async (input) => {
-		exitReader.close()
-		if (input == '') {
-			readline.moveCursor(process.stdout, 0, -1)
-			readline.clearLine(process.stdout, 1)
-			console.log(`${logs.reset}[ ${logs.c}User Input${logs.w} ] ${logs.r}      |${logs.reset} ${logs.c}yes${logs.reset}`)
-		}
+	const [onInput, reader] = logs.input('yes', logs.r)
+	onInput.then((input)=>{
 		if (input.match(/^y(es)?$/i) || input == '') {
 			logs.force('Exiting', ['H','SERVER',logs.r])
 			process.exit()
 		} else {
-			readline.moveCursor(process.stdout, 0, -1)
-			readline.clearLine(process.stdout, 1)
-			console.log(`${logs.reset}[ ${logs.c}User Input${logs.w} ] ${logs.g}      |${logs.reset} ${logs.c}${input}${logs.reset}`)
 			logs.force('Exit canceled', ['H','SERVER',logs.g])
 			logs.resume();
 			return userInput()
 		}
+	})
+
+	reader.on('SIGINT', () => {
+		reader.close()
+		console.log()
+		readline.moveCursor(process.stdout, 0, -1)
+		readline.clearLine(process.stdout, 1)
+		console.log(`${logs.reset}[ ${logs.c}User Input${logs.w} ] ${logs.r}      |${logs.reset} ${logs.c}yes${logs.reset}`)
+		logs.force('Exiting', ['H','SERVER',logs.r])
+		process.exit()
 	})
 }
