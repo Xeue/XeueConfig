@@ -1,6 +1,7 @@
 import fs from 'fs'
 import {logs} from 'xeue-logs'
 import readline from 'readline'
+import process from 'node:process'
 
 const defaults = {}
 const required = {}
@@ -78,8 +79,8 @@ const config = {
 export default config
 
 async function fromCLI(filePath = false) {
-	logs.force(`Entering configuration`, ['H', 'CONFIG', logs.c])
-	logs.force(``, ['H', '', logs.c])
+	logs.force('Entering configuration', ['H', 'CONFIG', logs.c])
+	logs.force('', ['H', '', logs.c])
 	for (const key in required) {
 		if (Object.hasOwnProperty.call(required, key)) {
 			const [dependant, value] = typeof dependacies[key] === 'undefined' ? [undefined, undefined] : dependacies[key]
@@ -107,15 +108,15 @@ async function fromCLI(filePath = false) {
 			}
 		}
 	}
-	logs.force(``, ['H', '', logs.c])
+	logs.force('', ['H', '', logs.c])
 	config.print()
 	if (filePath) {
-		logs.force(``, ['H', '', logs.c])
+		logs.force('', ['H', '', logs.c])
 		logs.force(`Saving configuration to ${logs.c}${filePath}${logs.reset}`, ['H', 'CONFIG', logs.c])
 		fs.writeFileSync(filePath, JSON.stringify(config.all()))
 	}
-	logs.force(``, ['H', '', logs.c])
-	logs.force(`Finished configuration`, ['H', 'CONFIG', logs.c])
+	logs.force('', ['H', '', logs.c])
+	logs.force('Finished configuration', ['H', 'CONFIG', logs.c])
 }
 
 function userInput(callBack) {
@@ -166,7 +167,7 @@ function doExitCheck() {
 			process.exit()
 		} else {
 			logs.force('Exit canceled', ['H','SERVER',logs.g])
-			logs.resume();
+			logs.resume()
 			return userInput()
 		}
 	})
