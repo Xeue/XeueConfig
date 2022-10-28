@@ -1,5 +1,5 @@
 import fs from 'fs'
-import {log, logObj, logs} from 'xeue-logs'
+import {logs} from 'xeue-logs'
 import readline from 'readline'
 
 const defaults = {}
@@ -19,8 +19,8 @@ const config = {
 			}
 			return true
 		} catch (error) {
-			log('There is an error with the config file or it doesn\'t exist', 'W')
-			logObj('Message', error, 'W')
+			logs.log('There is an error with the config file or it doesn\'t exist', 'W')
+			logs.object('Message', error, 'W')
 			return false
 		}
 	},
@@ -68,6 +68,10 @@ const config = {
 				logs.force(`Configuration option ${logs.y}${key}${logs.reset} has been set to: ${logs.c}${config.get(key)}${logs.reset}`, ['H', 'CONFIG', logs.c])
 			}
 		}
+	},
+
+	useLogger: (logger) => {
+		logs.use(logger)
 	}
 }
 
