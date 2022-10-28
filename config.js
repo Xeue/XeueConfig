@@ -107,7 +107,7 @@ async function fromCLI(filePath = false) {
 	config.print()
 	if (filePath) {
 		logs.force(``, ['H', '', logs.c])
-		logs.force(`Saving configuration to ${logs.c}${filePath}${logs.reset}`, ['H', '', logs.c])
+		logs.force(`Saving configuration to ${logs.c}${filePath}${logs.reset}`, ['H', 'CONFIG', logs.c])
 		fs.writeFileSync(filePath, JSON.stringify(config.all()))
 	}
 	logs.force(``, ['H', '', logs.c])
