@@ -87,24 +87,18 @@ async function fromCLI(filePath = false) {
 			if (typeof dependant === 'undefined' || config.get(dependant) == value) { // If question has no dependancies or the dependancies are already met
 				const question = typeof questions[key] === 'undefined' ? 'Please enter a value for' : questions[key]
 				logs.force(`${question} (${logs.y}${key}${logs.reset})`, ['H', '', logs.c]) // Ask question
+				let input
 				if (typeof required[key] !== 'undefined') { // If choices are specified print them
 					if (required[key].length > 0 ) {
-						logs.force(`${logs.dim}(${required[key].join(', ')})${logs.reset}`, ['H', '', logs.c])
+						input = logs.select(required[key], config.get(key))
+					} else {
+						[input] = logs.input(config.get(key))
+		
 					}
+				} else {
+					[input] = logs.input(config.get(key))
 				}
-
-				const [onInput] = logs.input(config.get(key))
-				let input = await onInput
-				if (typeof required[key] !== 'undefined') {
-					if (required[key].length > 0 ) {
-						while (!required[key].includes(input)) {
-							logs.force(`Invalid value for ${logs.y}${key}${logs.reset} entered, valid values are: ${logs.dim}(${required[key].join(', ')})${logs.reset}`, ['H', '', logs.c])
-							const [onInput] = logs.input()
-							input = await onInput
-						}
-					}
-				}
-				config[key] = input
+				config[key] = await input
 			}
 		}
 	}
