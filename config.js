@@ -128,6 +128,8 @@ function userInput(callBack) {
 			doExitCheck()
 			break
 		}
+		case '':
+			break
 		default:
 			if (typeof callBack == 'function') {
 				const valid = await callBack(input)
