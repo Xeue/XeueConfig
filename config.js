@@ -71,7 +71,7 @@ const config = {
 		}
 	},
 
-	useLogger: (logger) => {
+	useLogger: logger => {
 		logs.use(logger)
 	}
 }
@@ -79,6 +79,7 @@ const config = {
 export default config
 
 async function fromCLI(filePath = false) {
+	logs.pause()
 	logs.force('Entering configuration', ['H', 'CONFIG', logs.c])
 	logs.force('', ['H', '', logs.c])
 	for (const key in required) {
@@ -111,6 +112,7 @@ async function fromCLI(filePath = false) {
 	}
 	logs.force('', ['H', '', logs.c])
 	logs.force('Finished configuration', ['H', 'CONFIG', logs.c])
+	logs.resume()
 }
 
 function userInput(callBack) {
