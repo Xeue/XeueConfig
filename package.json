@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/Xeue/XeueConfig#readme",
   "dependencies": {
-    "xeue-logs": "^1.5.1"
+    "xeue-logs": "^1.5.2"
   },
   "devDependencies": {
     "eslint": "^8.26.0"
