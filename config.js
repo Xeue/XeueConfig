@@ -116,7 +116,7 @@ async function fromCLI(filePath = false) {
 	logs.force('Finished configuration', ['H', 'CONFIG', logs.c]);
 }
 
-async function fromAPI(filePath = false, requestFunction, printFunction) {
+async function fromAPI(filePath = false, requestFunction, doneFunction) {
 	logs.force('Entering configuration', ['H', 'CONFIG', logs.c]);
 	logs.force('', ['H', '', logs.c]);
 	for (const key in required) {
@@ -126,8 +126,9 @@ async function fromAPI(filePath = false, requestFunction, printFunction) {
 				const question = typeof questions[key] === 'undefined' ? 'Please enter a value for' : questions[key];
 				logs.force(`${question} (${logs.y}${key}${logs.reset})`, ['H', '', logs.c]); // Ask question
 				let input;
+
 				if (typeof required[key] !== 'undefined') { // If choices are specified print them
-					if (required[key].length > 0 ) {
+					if ((Array.isArray(required[key]) && required[key].length > 0 ) || Object.keys(required[key]).length > 0) {
 						input = requestFunction(question, config.get(key), required[key])
 					} else {
 						input = requestFunction(question, config.get(key))
@@ -141,7 +142,7 @@ async function fromAPI(filePath = false, requestFunction, printFunction) {
 		}
 	}
 	logs.force('', ['H', '', logs.c]);
-	config.print(printFunction);
+	config.print();
 	if (filePath) {
 		logs.force('', ['H', '', logs.c]);
 		logs.force(`Saving configuration to ${logs.c}${filePath}${logs.reset}`, ['H', 'CONFIG', logs.c]);
@@ -149,6 +150,7 @@ async function fromAPI(filePath = false, requestFunction, printFunction) {
 	}
 	logs.force('', ['H', '', logs.c]);
 	logs.force('Finished configuration', ['H', 'CONFIG', logs.c]);
+	doneFunction();
 }
 
 function userInput(callBack) {
