@@ -28,6 +28,8 @@ const config = {
 
 	fromCLI: fromCLI,
 
+	fromAPI: fromAPI,
+
 	userInput: userInput,
 
 	set: (property, value) => {
@@ -63,9 +65,12 @@ const config = {
 		if (typeof dependacy !== 'undefined') dependacies[property] = dependacy;
 	},
 
-	print: () => {
+	print: (printFunction) => {
 		for (const key in config.all()) {
 			if (Object.hasOwnProperty.call(config.all(), key)) {
+				if (typeof printFunction !== 'undefined') {
+					printFunction(`Configuration option ${logs.y}${key}${logs.reset} has been set to: ${logs.c}${config.get(key)}${logs.reset}`);
+				}
 				logs.force(`Configuration option ${logs.y}${key}${logs.reset} has been set to: ${logs.c}${config.get(key)}${logs.reset}`, ['H', 'CONFIG', logs.c]);
 			}
 		}
@@ -102,6 +107,41 @@ async function fromCLI(filePath = false) {
 	}
 	logs.force('', ['H', '', logs.c]);
 	config.print();
+	if (filePath) {
+		logs.force('', ['H', '', logs.c]);
+		logs.force(`Saving configuration to ${logs.c}${filePath}${logs.reset}`, ['H', 'CONFIG', logs.c]);
+		fs.writeFileSync(filePath, JSON.stringify(config.all()));
+	}
+	logs.force('', ['H', '', logs.c]);
+	logs.force('Finished configuration', ['H', 'CONFIG', logs.c]);
+}
+
+async function fromAPI(filePath = false, requestFunction, printFunction) {
+	logs.force('Entering configuration', ['H', 'CONFIG', logs.c]);
+	logs.force('', ['H', '', logs.c]);
+	for (const key in required) {
+		if (Object.hasOwnProperty.call(required, key)) {
+			const [dependant, value] = typeof dependacies[key] === 'undefined' ? [undefined, undefined] : dependacies[key];
+			if (typeof dependant === 'undefined' || config.get(dependant) == value) { // If question has no dependancies or the dependancies are already met
+				const question = typeof questions[key] === 'undefined' ? 'Please enter a value for' : questions[key];
+				logs.force(`${question} (${logs.y}${key}${logs.reset})`, ['H', '', logs.c]); // Ask question
+				let input;
+				if (typeof required[key] !== 'undefined') { // If choices are specified print them
+					if (required[key].length > 0 ) {
+						input = requestFunction(question, config.get(key), required[key])
+					} else {
+						input = requestFunction(question, config.get(key))
+		
+					}
+				} else {
+					input = requestFunction(question, config.get(key))
+				}
+				config[key] = await input;
+			}
+		}
+	}
+	logs.force('', ['H', '', logs.c]);
+	config.print(printFunction);
 	if (filePath) {
 		logs.force('', ['H', '', logs.c]);
 		logs.force(`Saving configuration to ${logs.c}${filePath}${logs.reset}`, ['H', 'CONFIG', logs.c]);
