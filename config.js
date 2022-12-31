@@ -5,7 +5,7 @@ const process = require('node:process');
 
 const defaults = {};
 const required = {};
-const dependacies = {};
+const dependancies = {};
 const questions = {};
 
 const config = {
@@ -59,10 +59,10 @@ const config = {
 		defaults[property] = value;
 	},
 
-	require: (property, values, question, dependacy) => {
+	require: (property, values, question, dependancy) => {
 		required[property] = values;
 		if (typeof question !== 'undefined') questions[property] = question;
-		if (typeof dependacy !== 'undefined') dependacies[property] = dependacy;
+		if (typeof dependancy !== 'undefined') dependancies[property] = dependancy;
 	},
 
 	print: (printFunction) => {
@@ -86,7 +86,7 @@ async function fromCLI(filePath = false) {
 	logs.force('', ['H', '', logs.c]);
 	for (const key in required) {
 		if (Object.hasOwnProperty.call(required, key)) {
-			const [dependant, value] = typeof dependacies[key] === 'undefined' ? [undefined, undefined] : dependacies[key];
+			const [dependant, value] = typeof dependancies[key] === 'undefined' ? [undefined, undefined] : dependancies[key];
 			if (typeof dependant === 'undefined' || config.get(dependant) == value) { // If question has no dependancies or the dependancies are already met
 				const question = typeof questions[key] === 'undefined' ? 'Please enter a value for' : questions[key];
 				logs.force(`${question} (${logs.y}${key}${logs.reset})`, ['H', '', logs.c]); // Ask question
@@ -120,7 +120,7 @@ async function fromAPI(filePath = false, requestFunction, doneFunction) {
 	logs.force('', ['H', '', logs.c]);
 	for (const key in required) {
 		if (Object.hasOwnProperty.call(required, key)) {
-			const [dependant, value] = typeof dependacies[key] === 'undefined' ? [undefined, undefined] : dependacies[key];
+			const [dependant, value] = typeof dependancies[key] === 'undefined' ? [undefined, undefined] : dependancies[key];
 			if (typeof dependant === 'undefined' || config.get(dependant) == value) { // If question has no dependancies or the dependancies are already met
 				const question = typeof questions[key] === 'undefined' ? 'Please enter a value for' : questions[key];
 				logs.force(`${question} (${logs.y}${key}${logs.reset})`, ['H', '', logs.c]); // Ask question
