@@ -92,11 +92,10 @@ async function fromCLI(filePath = false) {
 				logs.force(`${question} (${logs.y}${key}${logs.reset})`, ['H', '', logs.c]); // Ask question
 				let input;
 				if (typeof required[key] !== 'undefined') { // If choices are specified print them
-					if (required[key].length > 0 ) {
+					if ((Array.isArray(required[key]) && required[key].length > 0 ) || Object.keys(required[key]).length > 0) {
 						input = logs.select(required[key], config.get(key));
 					} else {
 						[input] = logs.input(config.get(key));
-		
 					}
 				} else {
 					[input] = logs.input(config.get(key));
@@ -132,7 +131,6 @@ async function fromAPI(filePath = false, requestFunction, doneFunction) {
 						input = requestFunction(question, config.get(key), required[key])
 					} else {
 						input = requestFunction(question, config.get(key))
-		
 					}
 				} else {
 					input = requestFunction(question, config.get(key))

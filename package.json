@@ -1,6 +1,6 @@
 {
   "name": "xeue-config",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Small utility for creating and managing node configs",
   "main": "config.js",
   "scripts": {
@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/Xeue/XeueConfig#readme",
   "dependencies": {
-    "xeue-logs": "^1.7.0"
+    "xeue-logs": "^1.7.1"
   },
   "devDependencies": {
     "eslint": "^8.30.0"
