@@ -9,9 +9,17 @@ const dependancies = {};
 const questions = {};
 
 const config = {
-	fromFile: async path => {
+	fromFile: async filePath => {
+		let path = filePath.replace(/\\/g, '/').split('/');
+		path.pop();
+		path = path.join('/');
+		if (!fs.existsSync(path)) {
+			fs.mkdirSync(path, {
+				recursive: true
+			});
+		}
 		try {
-			const configData = await fs.promises.readFile(path);
+			const configData = await fs.promises.readFile(filePath);
 			const fileObject = JSON.parse(configData);
 			for (const key in fileObject) {
 				if (Object.hasOwnProperty.call(fileObject, key)) {
@@ -107,6 +115,14 @@ async function fromCLI(filePath = false) {
 	logs.force('', ['H', '', logs.c]);
 	config.print();
 	if (filePath) {
+		let path = filePath.replace(/\\/g, '/').split('/');
+		path.pop();
+		path = path.join('/');
+		if (!fs.existsSync(path)) {
+			fs.mkdirSync(path, {
+				recursive: true
+			});
+		}
 		logs.force('', ['H', '', logs.c]);
 		logs.force(`Saving configuration to ${logs.c}${filePath}${logs.reset}`, ['H', 'CONFIG', logs.c]);
 		fs.writeFileSync(filePath, JSON.stringify(config.all()));
@@ -142,6 +158,14 @@ async function fromAPI(filePath = false, requestFunction, doneFunction) {
 	logs.force('', ['H', '', logs.c]);
 	config.print();
 	if (filePath) {
+		let path = filePath.replace(/\\/g, '/').split('/');
+		path.pop();
+		path = path.join('/');
+		if (!fs.existsSync(path)) {
+			fs.mkdirSync(path, {
+				recursive: true
+			});
+		}
 		logs.force('', ['H', '', logs.c]);
 		logs.force(`Saving configuration to ${logs.c}${filePath}${logs.reset}`, ['H', 'CONFIG', logs.c]);
 		fs.writeFileSync(filePath, JSON.stringify(config.all()));
