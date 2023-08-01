@@ -81,12 +81,12 @@ const config = {
 
 	print: (printFunction) => {
 		for (const key in config.all()) {
-			if (Object.hasOwnProperty.call(config.all(), key)) {
-				if (typeof printFunction !== 'undefined') {
-					printFunction(`Configuration option ${logs.y}${key}${logs.reset} has been set to: ${logs.c}${config.get(key)}${logs.reset}`);
-				}
-				logs.force(`Configuration option ${logs.y}${key}${logs.reset} has been set to: ${logs.c}${config.get(key)}${logs.reset}`, ['H', 'CONFIG', logs.c]);
+			if (!Object.hasOwnProperty.call(config.all(), key)) continue;
+			if (required[key] == 'INFO') continue;
+			if (typeof printFunction !== 'undefined') {
+				printFunction(`Configuration option ${logs.y}${key}${logs.reset} has been set to: ${logs.c}${config.get(key)}${logs.reset}`);
 			}
+			logs.force(`Configuration option ${logs.y}${key}${logs.reset} has been set to: ${logs.c}${config.get(key)}${logs.reset}`, ['H', 'CONFIG', logs.c]);
 		}
 	},
 
