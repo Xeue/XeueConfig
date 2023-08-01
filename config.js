@@ -73,6 +73,12 @@ const config = {
 		if (typeof dependancy !== 'undefined') dependancies[property] = dependancy;
 	},
 
+	info: (property, question, dependancy) => {
+		required[property] = 'INFO';
+		if (typeof question !== 'undefined') questions[property] = question;
+		if (typeof dependancy !== 'undefined') dependancies[property] = dependancy;
+	},
+
 	print: (printFunction) => {
 		for (const key in config.all()) {
 			if (Object.hasOwnProperty.call(config.all(), key)) {
@@ -93,24 +99,27 @@ async function fromCLI(filePath = false) {
 	logs.force('Entering configuration', ['H', 'CONFIG', logs.c]);
 	logs.force('', ['H', '', logs.c]);
 	for (const key in required) {
-		if (Object.hasOwnProperty.call(required, key)) {
-			const [dependant, value] = typeof dependancies[key] === 'undefined' ? [undefined, undefined] : dependancies[key];
-			if (typeof dependant === 'undefined' || config.get(dependant) == value) { // If question has no dependancies or the dependancies are already met
-				const question = typeof questions[key] === 'undefined' ? 'Please enter a value for' : questions[key];
-				logs.force(`${question} (${logs.y}${key}${logs.reset})`, ['H', '', logs.c]); // Ask question
-				let input;
-				if (typeof required[key] !== 'undefined') { // If choices are specified print them
-					if ((Array.isArray(required[key]) && required[key].length > 0 ) || Object.keys(required[key]).length > 0) {
-						input = logs.select(required[key], config.get(key));
-					} else {
-						[input] = logs.input(config.get(key));
-					}
-				} else {
-					[input] = logs.input(config.get(key));
-				}
-				config[key] = await input;
+		if (!Object.hasOwnProperty.call(required, key)) continue;
+		const [dependant, value] = typeof dependancies[key] === 'undefined' ? [undefined, undefined] : dependancies[key];
+		if (dependant !== undefined && config.get(dependant) !== value) continue; // If question has no dependancies or the dependancies are already met
+
+		const question = typeof questions[key] === 'undefined' ? 'Please enter a value for' : questions[key];
+
+		logs.force(`${question} (${logs.y}${key}${logs.reset})`, ['H', '', logs.c]); // Ask question
+		let input;
+
+		if (required[key] === 'INFO') {
+			input = logs.select({true:'Next'}, true);
+		} else if (typeof required[key] !== 'undefined') { // If choices are specified print them
+			if ((Array.isArray(required[key]) && required[key].length > 0 ) || Object.keys(required[key]).length > 0) {
+				input = logs.select(required[key], config.get(key));
+			} else {
+				[input] = logs.input(config.get(key));
 			}
+		} else {
+			[input] = logs.input(config.get(key));
 		}
+		config[key] = await input;
 	}
 	logs.force('', ['H', '', logs.c]);
 	config.print();
@@ -135,25 +144,28 @@ async function fromAPI(filePath = false, requestFunction, doneFunction) {
 	logs.force('Entering configuration', ['H', 'CONFIG', logs.c]);
 	logs.force('', ['H', '', logs.c]);
 	for (const key in required) {
-		if (Object.hasOwnProperty.call(required, key)) {
-			const [dependant, value] = typeof dependancies[key] === 'undefined' ? [undefined, undefined] : dependancies[key];
-			if (typeof dependant === 'undefined' || config.get(dependant) == value) { // If question has no dependancies or the dependancies are already met
-				const question = typeof questions[key] === 'undefined' ? 'Please enter a value for' : questions[key];
-				logs.force(`${question} (${logs.y}${key}${logs.reset})`, ['H', '', logs.c]); // Ask question
-				let input;
+		if (!Object.hasOwnProperty.call(required, key)) continue;
+		const [dependant, value] = typeof dependancies[key] === 'undefined' ? [undefined, undefined] : dependancies[key];
+		if (dependant !== undefined && config.get(dependant) !== value) continue; // If question has no dependancies or the dependancies are already met
 
-				if (typeof required[key] !== 'undefined') { // If choices are specified print them
-					if ((Array.isArray(required[key]) && required[key].length > 0 ) || Object.keys(required[key]).length > 0) {
-						input = requestFunction(question, config.get(key), required[key])
-					} else {
-						input = requestFunction(question, config.get(key))
-					}
-				} else {
-					input = requestFunction(question, config.get(key))
-				}
-				config[key] = await input;
+		const question = typeof questions[key] === 'undefined' ? 'Please enter a value for' : questions[key];
+
+		logs.force(`${question} (${logs.y}${key}${logs.reset})`, ['H', '', logs.c]); // Ask question
+		let input;
+
+		if (required[key] === 'INFO') {
+			await requestFunction(question, true, 'INFO');
+			continue;
+		} else if (typeof required[key] !== 'undefined') { // If choices are specified print them
+			if ((Array.isArray(required[key]) && required[key].length > 0 ) || Object.keys(required[key]).length > 0) {
+				input = requestFunction(question, config.get(key), required[key])
+			} else {
+				input = requestFunction(question, config.get(key))
 			}
+		} else {
+			input = requestFunction(question, config.get(key))
 		}
+		config[key] = await input;
 	}
 	logs.force('', ['H', '', logs.c]);
 	config.print();
