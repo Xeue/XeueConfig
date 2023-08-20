@@ -7,17 +7,17 @@ export class Config {
 
 	async fromFile(
         filePath: string
-    ): boolean;
+    ): Promise<boolean>;
 
 	async fromCLI(
         filePath: string
-    ): void;
+    ): Promise;
 
 	async fromAPI(
         filePath: string,
         requestFunction: Function,
         doneFunction: Function
-    ): void;
+    ): Promise;
 
 	userInput(
         callBack: Function
