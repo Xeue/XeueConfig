@@ -1,13 +1,23 @@
 const fs = require('fs');
-const {logs} = require('xeue-logs');
+const {Logs} = require('xeue-logs');
 const readline = require('readline');
 const process = require('node:process');
 
 class Config {
 	constructor(
-		logger = logs
+		logger
 	) {
-		this.logger = logger;
+		if (logger) {
+			this.logger = logger;
+		} else {
+			this.logger = new Logs(
+				false,
+				'configLogging',
+				path.join(__data, 'configLogging'),
+				'D',
+				false
+			)
+		}
 		this.defaults = {};
 		this.required = {};
 		this.dependancies = {};
@@ -41,8 +51,8 @@ class Config {
 	}
 
 	async fromCLI(filePath = false) {
-		this.logger.force('Entering configuration', ['H', 'CONFIG', logs.c]);
-		this.logger.force('', ['H', '', logs.c]);
+		this.logger.force('Entering configuration', ['H', 'CONFIG', this.logger.c]);
+		this.logger.force('', ['H', '', this.logger.c]);
 		for (const key in this.required) {
 			if (!Object.hasOwnProperty.call(this.required, key)) continue;
 			const [dependant, value] = typeof this.dependancies[key] === 'undefined' ? [undefined, undefined] : this.dependancies[key];
@@ -50,7 +60,7 @@ class Config {
 	
 			const question = typeof this.questions[key] === 'undefined' ? 'Please enter a value for' : this.questions[key];
 	
-			this.logger.force(`${question} (${logs.y}${key}${logs.reset})`, ['H', '', logs.c]); // Ask question
+			this.logger.force(`${question} (${this.logger.y}${key}${this.logger.reset})`, ['H', '', this.logger.c]); // Ask question
 			let input;
 	
 			if (this.required[key] === 'INFO') {
@@ -66,7 +76,7 @@ class Config {
 			}
 			this.config[key] = await input;
 		}
-		this.logger.force('', ['H', '', logs.c]);
+		this.logger.force('', ['H', '', this.logger.c]);
 		this.print();
 		if (filePath) {
 			let path = filePath.replace(/\\/g, '/').split('/');
@@ -77,17 +87,17 @@ class Config {
 					recursive: true
 				});
 			}
-			this.logger.force('', ['H', '', logs.c]);
-			this.logger.force(`Saving configuration to ${logs.c}${filePath}${logs.reset}`, ['H', 'CONFIG', logs.c]);
+			this.logger.force('', ['H', '', this.logger.c]);
+			this.logger.force(`Saving configuration to ${this.logger.c}${filePath}${this.logger.reset}`, ['H', 'CONFIG', this.logger.c]);
 			fs.writeFileSync(filePath, JSON.stringify(this.all()));
 		}
-		this.logger.force('', ['H', '', logs.c]);
-		this.logger.force('Finished configuration', ['H', 'CONFIG', logs.c]);
+		this.logger.force('', ['H', '', this.logger.c]);
+		this.logger.force('Finished configuration', ['H', 'CONFIG', this.logger.c]);
 	}
 
 	async fromAPI(filePath = false, requestFunction, doneFunction) {
-		this.logger.force('Entering configuration', ['H', 'CONFIG', logs.c]);
-		this.logger.force('', ['H', '', logs.c]);
+		this.logger.force('Entering configuration', ['H', 'CONFIG', this.logger.c]);
+		this.logger.force('', ['H', '', this.logger.c]);
 		for (const key in this.required) {
 			if (!Object.hasOwnProperty.call(this.required, key)) continue;
 			const [dependant, value] = typeof this.dependancies[key] === 'undefined' ? [undefined, undefined] : this.dependancies[key];
@@ -95,7 +105,7 @@ class Config {
 	
 			const question = typeof this.questions[key] === 'undefined' ? 'Please enter a value for' : this.questions[key];
 	
-			this.logger.force(`${question} (${logs.y}${key}${logs.reset})`, ['H', '', logs.c]); // Ask question
+			this.logger.force(`${question} (${this.logger.y}${key}${this.logger.reset})`, ['H', '', this.logger.c]); // Ask question
 			let input;
 	
 			if (this.required[key] === 'INFO') {
@@ -112,7 +122,7 @@ class Config {
 			}
 			this.config[key] = await input;
 		}
-		this.logger.force('', ['H', '', logs.c]);
+		this.logger.force('', ['H', '', this.logger.c]);
 		this.print();
 		if (filePath) {
 			let path = filePath.replace(/\\/g, '/').split('/');
@@ -123,12 +133,12 @@ class Config {
 					recursive: true
 				});
 			}
-			this.logger.force('', ['H', '', logs.c]);
-			this.logger.force(`Saving configuration to ${logs.c}${filePath}${logs.reset}`, ['H', 'CONFIG', logs.c]);
+			this.logger.force('', ['H', '', this.logger.c]);
+			this.logger.force(`Saving configuration to ${this.logger.c}${filePath}${this.logger.reset}`, ['H', 'CONFIG', this.logger.c]);
 			fs.writeFileSync(filePath, JSON.stringify(this.all()));
 		}
-		this.logger.force('', ['H', '', logs.c]);
-		this.logger.force('Finished configuration', ['H', 'CONFIG', logs.c]);
+		this.logger.force('', ['H', '', this.logger.c]);
+		this.logger.force('Finished configuration', ['H', 'CONFIG', this.logger.c]);
 		doneFunction();
 	}
 
@@ -137,7 +147,7 @@ class Config {
 	
 		onInput.then(async (input) => {
 			this.logger.pause();
-			console.log(`${logs.reset}[ ${logs.c}User Input${logs.w} ]       ${logs.c}| ${input}${logs.reset}`);
+			console.log(`${this.logger.reset}[ ${this.logger.c}User Input${this.logger.w} ]       ${this.logger.c}| ${input}${this.logger.reset}`);
 	
 			switch (input) {
 			case 'exit':
@@ -172,15 +182,15 @@ class Config {
 	doExitCheck() {
 		this.logger.pause();
 	
-		this.logger.force('Are you sure you want to exit? (y, n)', ['H', '', logs.r]);
+		this.logger.force('Are you sure you want to exit? (y, n)', ['H', '', this.logger.r]);
 	
-		const [onInput, reader] = this.logger.input('yes', logs.r);
+		const [onInput, reader] = this.logger.input('yes', this.logger.r);
 		onInput.then((input)=>{
 			if (input.match(/^y(es)?$/i) || input == '') {
-				this.logger.force('Exiting', ['H','SERVER',logs.r]);
+				this.logger.force('Exiting', ['H','SERVER',this.logger.r]);
 				process.exit();
 			} else {
-				this.logger.force('Exit canceled', ['H','SERVER',logs.g]);
+				this.logger.force('Exit canceled', ['H','SERVER',this.logger.g]);
 				this.logger.resume();
 				return userInput();
 			}
@@ -191,8 +201,8 @@ class Config {
 			console.log();
 			readline.moveCursor(process.stdout, 0, -1);
 			readline.clearLine(process.stdout, 1);
-			console.log(`${logs.reset}[ ${logs.c}User Input${logs.w} ] ${logs.r}      |${logs.reset} ${logs.c}yes${logs.reset}`);
-			this.logger.force('Exiting', ['H','SERVER',logs.r]);
+			console.log(`${this.logger.reset}[ ${this.logger.c}User Input${this.logger.w} ] ${this.logger.r}      |${this.logger.reset} ${this.logger.c}yes${this.logger.reset}`);
+			this.logger.force('Exiting', ['H','SERVER',this.logger.r]);
 			process.exit();
 		});
 	}
@@ -242,9 +252,9 @@ class Config {
 			if (!Object.hasOwnProperty.call(allConfig, key)) continue;
 			if (this.required[key] == 'INFO') continue;
 			if (typeof printFunction !== 'undefined') {
-				printFunction(`Configuration option ${logs.y}${key}${logs.reset} has been set to: ${logs.c}${this.get(key)}${logs.reset}`);
+				printFunction(`Configuration option ${this.logger.y}${key}${this.logger.reset} has been set to: ${this.logger.c}${this.get(key)}${this.logger.reset}`);
 			}
-			this.logger.force(`Configuration option ${logs.y}${key}${logs.reset} has been set to: ${logs.c}${this.get(key)}${logs.reset}`, ['H', 'CONFIG', logs.c]);
+			this.logger.force(`Configuration option ${this.logger.y}${key}${this.logger.reset} has been set to: ${this.logger.c}${this.get(key)}${this.logger.reset}`, ['H', 'CONFIG', this.logger.c]);
 		}
 	}
 };
