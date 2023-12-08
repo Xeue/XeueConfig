@@ -168,7 +168,7 @@ class Config {
 	
 		onInput.then(async (input) => {
 			this.logger.pause();
-			console.log(`${this.logger.reset}[ ${this.logger.c}Data Entered${this.logger.w} ]       ${this.logger.c}| ${input}${this.logger.reset}`);
+			console.log(`${this.logger.reset}[${this.logger.c}Data Entered${this.logger.w}]       ${this.logger.c}| ${input}${this.logger.reset}`);
 	
 			switch (input) {
 			case 'exit':
