@@ -23,9 +23,11 @@ class Config {
 		this.dependancies = {};
 		this.questions = {};
 		this.config = {};
+		this.filePath;
 	}
 
 	async fromFile(filePath) {
+		this.filePath = filePath;
 		let path = filePath.replace(/\\/g, '/').split('/');
 		path.pop();
 		path = path.join('/');
@@ -150,6 +152,7 @@ class Config {
 
 	write(filePath) {
 		if (!filePath) return;
+		this.filePath = filePath;
 		let path = filePath.replace(/\\/g, '/').split('/');
 		path.pop();
 		path = path.join('/');
@@ -230,6 +233,7 @@ class Config {
 
 	set(property, value) {
 		this.config[property] = typeof value === 'undefined' ? this.defaults[property] : value;
+		this.write(this.filePath);
 	}
 
 	get(property) {
