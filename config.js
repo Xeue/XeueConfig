@@ -109,6 +109,10 @@ class Config extends EventEmitter {
 				[input] = this.logger.input(this.get(key));
 			}
 			this.config[key] = await input;
+			this.emit('set', {
+				'property': key,
+				'value': this.config[key]
+			});
 		}
 		this.logger.force('', ['H', '', this.logger.c]);
 		this.print();
@@ -143,6 +147,10 @@ class Config extends EventEmitter {
 				input = requestFunction(question, this.get(key))
 			}
 			this.config[key] = await input;
+			this.emit('set', {
+				'property': key,
+				'value': this.config[key]
+			});
 		}
 		this.logger.force('', ['H', '', this.logger.c]);
 		this.print();
