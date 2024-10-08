@@ -1,19 +1,21 @@
 const fs = require('fs');
 const {Logs} = require('xeue-logs');
 const readline = require('readline');
+const EventEmitter = require('events');
 const process = require('node:process');
 
-class Config {
+class Config extends EventEmitter {
 	constructor(
 		logger
 	) {
+		super();
 		if (logger) {
 			this.logger = logger;
 		} else {
 			this.logger = new Logs(
 				false,
 				'configLogging',
-				path.join(__data, 'configLogging'),
+				'./configLogging',
 				'D',
 				false
 			);
@@ -234,6 +236,10 @@ class Config {
 	set(property, value) {
 		this.config[property] = typeof value === 'undefined' ? this.defaults[property] : value;
 		this.write(this.filePath);
+		this.emit('set', {
+			'property': property,
+			'value': value
+		});
 	}
 
 	get(property) {

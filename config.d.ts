@@ -1,6 +1,6 @@
 declare module 'xeue-config';
 
-export class Config {
+export class Config extends EventEmitter {
     constructor(
         logger: Object
     ): void;
