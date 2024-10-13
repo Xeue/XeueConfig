@@ -1,23 +1,24 @@
 declare module 'xeue-config';
+import type EventEmitter from "events";
 
 export class Config extends EventEmitter {
     constructor(
         logger: Object
-    ): void;
+    );
 
-	async fromFile(
+	fromFile(
         filePath: string
     ): Promise<boolean>;
 
-	async fromCLI(
+	fromCLI(
         filePath: string
-    ): Promise;
+    ): Promise<any>;
 
-	async fromAPI(
+	fromAPI(
         filePath: string,
         requestFunction: Function,
         doneFunction: Function
-    ): Promise;
+    ): Promise<any>;
 
 	userInput(
         callBack: Function
@@ -45,7 +46,7 @@ export class Config extends EventEmitter {
         property: string,
         values: any,
         question: string,
-        dependancy: string
+        dependancy?: (string | boolean)[]
     ): void;
 
 	info(
@@ -55,6 +56,6 @@ export class Config extends EventEmitter {
     ): void;
 
 	print(
-        printFunction: Function
+        printFunction?: Function
     ): void;
 }
