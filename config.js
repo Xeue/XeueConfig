@@ -181,7 +181,17 @@ class Config extends EventEmitter {
 	
 		onInput.then(async (input) => {
 			this.logger.pause();
-			console.log(`${this.logger.reset}[${this.logger.c}Data Entered${this.logger.w}]       ${this.logger.c}| ${input}${this.logger.reset}`);
+
+			this.logger.logSend({
+				'timeString': `${this.logger.c}Data Entered${this.logger.reset}`,
+				'level': 'U',
+				'colour': this.logger.c,
+				'textColour': this.logger.w,
+				'catagory': '',
+				'seperator': '      |',
+				'message': input,
+				'lineNumString': ''
+			}, true);
 	
 			switch (input) {
 			case 'exit':
@@ -235,7 +245,18 @@ class Config extends EventEmitter {
 			console.log();
 			readline.moveCursor(process.stdout, 0, -1);
 			readline.clearLine(process.stdout, 1);
-			console.log(`${this.logger.reset}[ ${this.logger.c}User Input${this.logger.w} ] ${this.logger.r}      |${this.logger.reset} ${this.logger.c}yes${this.logger.reset}`);
+
+			this.logger.logSend({
+				'timeString': `${this.logger.c}User Input${this.logger.reset}`,
+				'level': 'U',
+				'colour': this.logger.r,
+				'textColour': this.logger.c,
+				'catagory': '',
+				'seperator': '      |',
+				'message': 'yes',
+				'lineNumString': ''
+			}, true);
+
 			this.logger.force('Process exited by user command', ['H','SERVER',this.logger.r]);
 			process.exit();
 		});
