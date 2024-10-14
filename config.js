@@ -247,7 +247,7 @@ class Config extends EventEmitter {
 			readline.clearLine(process.stdout, 1);
 
 			this.logger.logSend({
-				'timeString': `${this.logger.c}User Input${this.logger.reset}`,
+				'timeString': `${this.logger.c} User Input ${this.logger.reset}`,
 				'level': 'U',
 				'colour': this.logger.r,
 				'textColour': this.logger.c,

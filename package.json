@@ -1,6 +1,6 @@
 {
   "name": "xeue-config",
-  "version": "2.2.6",
+  "version": "2.2.7",
   "description": "Small utility for creating and managing node configs",
   "main": "config.js",
   "scripts": {
