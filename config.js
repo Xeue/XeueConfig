@@ -80,6 +80,7 @@ class Config extends EventEmitter {
 		this.logger.force('Create custom config?', ['H', 'CONFIG', this.logger.c]);
 		const startConfig = await this.logger.select({true: 'Yes', false: 'No'}, true);
 		clearTimeout(timeOut);
+		this.logger.emit('cancelInput');
 		if (!startConfig) {
 			this.write(filePath);
 			return;
