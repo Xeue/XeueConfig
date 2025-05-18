@@ -3,6 +3,7 @@ const {Logs} = require('xeue-logs');
 const readline = require('readline');
 const EventEmitter = require('events');
 const process = require('node:process');
+const path = require('path');
 
 class Config extends EventEmitter {
 	constructor(
@@ -26,20 +27,21 @@ class Config extends EventEmitter {
 		this.questions = {};
 		this.config = {};
 		this.filePath;
+		this.objects = {}
 	}
 
-	async fromFile(filePath) {
+	path(filePath) {
 		this.filePath = filePath;
-		let path = filePath.replace(/\\/g, '/').split('/');
-		path.pop();
-		path = path.join('/');
-		if (!fs.existsSync(path)) {
-			fs.mkdirSync(path, {
+	}
+
+	async fromFile(file = 'config.conf') {
+		if (!fs.existsSync(this.filePath)) {
+			fs.mkdirSync(this.filePath, {
 				recursive: true
 			});
 		}
 		try {
-			const configData = await fs.promises.readFile(filePath);
+			const configData = await fs.promises.readFile(path.join(this.filePath, file));
 			const fileObject = JSON.parse(configData);
 			for (const key in fileObject) {
 				if (Object.hasOwnProperty.call(fileObject, key)) {
@@ -54,10 +56,10 @@ class Config extends EventEmitter {
 		}
 	}
 
-	async fromCLI(filePath = false, time = false) {
+	async fromCLI(file = 'config.conf', time = false) {
 		console.log(process.stdout.isTTY);
 		if (!process.stdout.isTTY) {
-			this.write(filePath);
+			this.write(file);
 			return;
 		}
 		let timeOut;
@@ -82,7 +84,7 @@ class Config extends EventEmitter {
 		clearTimeout(timeOut);
 		this.logger.emit('cancelInput');
 		if (!startConfig) {
-			this.write(filePath);
+			this.write(file);
 			return;
 		}
 
@@ -117,12 +119,12 @@ class Config extends EventEmitter {
 		}
 		this.logger.force('', ['H', '', this.logger.c]);
 		this.print();
-		this.write(filePath);
+		this.write(file);
 		this.logger.force('', ['H', '', this.logger.c]);
 		this.logger.force('Finished configuration', ['H', 'CONFIG', this.logger.c]);
 	}
 
-	async fromAPI(filePath = false, requestFunction, doneFunction) {
+	async fromAPI(file = 'config.conf', requestFunction, doneFunction) {
 		this.logger.force('Entering configuration', ['H', 'CONFIG', this.logger.c]);
 		this.logger.force('', ['H', '', this.logger.c]);
 		for (const key in this.required) {
@@ -155,26 +157,33 @@ class Config extends EventEmitter {
 		}
 		this.logger.force('', ['H', '', this.logger.c]);
 		this.print();
-		this.write(filePath);
+		this.write(file);
 		this.logger.force('', ['H', '', this.logger.c]);
 		this.logger.force('Finished configuration', ['H', 'CONFIG', this.logger.c]);
 		doneFunction();
 	}
 
-	write(filePath) {
-		if (!filePath) return;
-		this.filePath = filePath;
-		let path = filePath.replace(/\\/g, '/').split('/');
-		path.pop();
-		path = path.join('/');
-		if (!fs.existsSync(path)) {
-			fs.mkdirSync(path, {
+	write(file = 'config.conf') {
+		if (!fs.existsSync(this.filePath)) {
+			fs.mkdirSync(this.filePath, {
 				recursive: true
 			});
 		}
 		this.logger.force('', ['H', '', this.logger.c]);
-		this.logger.force(`Saving configuration to ${this.logger.c}${filePath}${this.logger.reset}`, ['H', 'CONFIG', this.logger.c]);
-		fs.writeFileSync(filePath, JSON.stringify(this.all()));
+		this.logger.force(`Saving configuration to ${this.logger.c}${path.join(this.filePath, file)}${this.logger.reset}`, ['H', 'CONFIG', this.logger.c]);
+		fs.writeFileSync(path.join(this.filePath, file), JSON.stringify(this.all()));
+	}
+
+	writeObject(property) {
+		const filePath = path.join(this.filePath, '/data');
+		if (!fs.existsSync(filePath)) {
+			fs.mkdirSync(filePath, {
+				recursive: true
+			});
+		}
+		this.logger.force('', ['H', '', this.logger.c]);
+		this.logger.force(`Saving configuration to ${this.logger.c}${filePath}/${property}.json${this.logger.reset}`, ['H', 'CONFIG', this.logger.c]);
+		fs.writeFileSync(`${filePath}/${property}.json`, JSON.stringify(this.config[property], null, 4));
 	}
 
 	userInput(callBack) {
@@ -265,27 +274,40 @@ class Config extends EventEmitter {
 
 	set(property, value) {
 		this.config[property] = typeof value === 'undefined' ? this.defaults[property] : value;
-		this.write(this.filePath);
-		this.emit('set', {
-			'property': property,
-			'value': value
-		});
+		if (Object.keys(this.objects).includes(property)) {
+			this.writeObject(property)
+		} else {
+			this.write();
+			this.emit('set', {
+				'property': property,
+				'value': value
+			});
+		}
 	}
 
-	get(property) {
-		return typeof this.config[property] === 'undefined' ? this.defaults[property] : this.config[property];
+	get(property, filter) {
+		const value = typeof this.config[property] === 'undefined' ? this.defaults[property] : this.config[property];
+		if (Object.keys(this.objects).includes(property)) {
+			const object = this.objects[property]
+			if (filter !== undefined) return value.filter(item => item[object.filter] == filter);
+			else return value;
+		} else {
+			return value;
+		}
 	}
 
 	all() {
 		const allConfig = {};
-		for (const key in this.defaults) {
-			if (Object.hasOwnProperty.call(this.defaults, key) && typeof this.defaults[key] !== 'function') {
-				allConfig[key] = this.defaults[key];
+		for (const property in this.defaults) {
+			if (Object.hasOwnProperty.call(this.defaults, property) && typeof this.defaults[property] !== 'function') {
+				if (Object.keys(this.objects).includes(property)) continue
+				allConfig[property] = this.defaults[property];
 			}
 		}
-		for (const key in this.config) {
-			if (Object.hasOwnProperty.call(this.config, key) && typeof this.config[key] !== 'function') {
-				allConfig[key] = this.get(key);
+		for (const property in this.config) {
+			if (Object.hasOwnProperty.call(this.config, property) && typeof this.config[property] !== 'function') {
+				if (Object.keys(this.objects).includes(property)) continue
+				allConfig[property] = this.get(property);
 			}
 		}
 		return allConfig;
@@ -316,6 +338,29 @@ class Config extends EventEmitter {
 				printFunction(`Configuration option ${this.logger.y}${key}${this.logger.reset} has been set to: ${this.logger.c}${this.get(key)}${this.logger.reset}`);
 			}
 			this.logger.force(`Configuration option ${this.logger.y}${key}${this.logger.reset} has been set to: ${this.logger.c}${this.get(key)}${this.logger.reset}`, ['H', 'CONFIG', this.logger.c]);
+		}
+	}
+
+	async object(definition, defaults) {
+		this.objects[definition.property] = definition
+		this.defaults[definition.property] = defaults
+		const filePath = path.join(this.filePath, '/data');
+
+		if (!fs.existsSync(filePath)) {
+			this.config[definition.property] = defaults;
+			fs.mkdirSync(filePath, {
+				recursive: true
+			});
+		} else {
+			try {
+				const configData = await fs.promises.readFile(path.join(filePath, `${definition.property}.json`));
+				const fileObject = JSON.parse(configData);
+				this.config[definition.property] = fileObject;
+			} catch (error) {
+				this.config[definition.property] = defaults;
+				this.logger.log(`There is an error with the config file at ${path.join(filePath, `${definition.property}.json`)}, loading defaults`, 'W');
+				this.writeObject(definition.property)
+			}
 		}
 	}
 }

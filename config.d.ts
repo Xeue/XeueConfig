@@ -6,19 +6,31 @@ export class Config extends EventEmitter {
         logger: Object
     );
 
-	fromFile(
+    path(
         filePath: string
+    ): void;
+
+	fromFile(
+        file?: string
     ): Promise<boolean>;
 
 	fromCLI(
-        filePath: string
+        file?: string
     ): Promise<any>;
 
 	fromAPI(
-        filePath: string,
+        file: string,
         requestFunction: Function,
         doneFunction: Function
     ): Promise<any>;
+
+    write(
+        file?: string
+    ): void;
+
+    writeObject(
+        property: string
+    ): void;
 
 	userInput(
         callBack: Function
@@ -32,7 +44,8 @@ export class Config extends EventEmitter {
     ): void;
 
 	get(
-        property: string
+        property: string,
+        filter?: any
     ): any;
 
 	all(): {};
@@ -57,5 +70,10 @@ export class Config extends EventEmitter {
 
 	print(
         printFunction?: Function
+    ): void;
+
+    object(
+        definition: any,
+        defaults: any
     ): void;
 }
