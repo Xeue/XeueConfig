@@ -27,7 +27,8 @@ class Config extends EventEmitter {
 		this.questions = {};
 		this.config = {};
 		this.filePath;
-		this.objects = {}
+		this.objects = {};
+		this.logLevel = 'H';
 	}
 
 	path(filePath) {
@@ -64,22 +65,22 @@ class Config extends EventEmitter {
 		}
 		let timeOut;
 		if (time) {
-			this.logger.force(`If no input is detected for ${this.logger.y}${time}${this.logger.reset} seconds, the default configuration will be used`, ['H', 'CONFIG', this.logger.c]);
+			this.logger.force(`If no input is detected for ${this.logger.y}${time}${this.logger.reset} seconds, the default configuration will be used`, [this.logLevel, 'CONFIG', this.logger.c]);
 			const startTime = time;
 			timeOut = setInterval(()=>{
 				if (time < 1) {
-					this.logger.force(`No input for ${this.logger.y}${startTime}${this.logger.reset} seconds, default config will be used`, ['H', 'CONFIG', this.logger.c]);
+					this.logger.force(`No input for ${this.logger.y}${startTime}${this.logger.reset} seconds, default config will be used`, [this.logLevel, 'CONFIG', this.logger.c]);
 					this.logger.emit('cancelInput');
 					clearTimeout(timeOut);
 				} else {
 					time--;
 					readline.moveCursor(process.stdout, 0, -3);
-					this.logger.force(`If no input is detected for ${this.logger.y}${time}${this.logger.reset} seconds, the default configuration will be used`, ['H', 'CONFIG', this.logger.c]);
+					this.logger.force(`If no input is detected for ${this.logger.y}${time}${this.logger.reset} seconds, the default configuration will be used`, [this.logLevel, 'CONFIG', this.logger.c]);
 					readline.moveCursor(process.stdout, 0, 3);
 				}
 			}, 1000);
 		}
-		this.logger.force('Create custom config?', ['H', 'CONFIG', this.logger.c]);
+		this.logger.force('Create custom config?', [this.logLevel, 'CONFIG', this.logger.c]);
 		const startConfig = await this.logger.select({true: 'Yes', false: 'No'}, true);
 		clearTimeout(timeOut);
 		this.logger.emit('cancelInput');
@@ -88,8 +89,8 @@ class Config extends EventEmitter {
 			return;
 		}
 
-		this.logger.force('Entering configuration', ['H', 'CONFIG', this.logger.c]);
-		this.logger.force('', ['H', '', this.logger.c]);
+		this.logger.force('Entering configuration', [this.logLevel, 'CONFIG', this.logger.c]);
+		this.logger.force('', [this.logLevel, '', this.logger.c]);
 		for (const key in this.required) {
 			if (!Object.hasOwnProperty.call(this.required, key)) continue;
 			const [dependant, value] = typeof this.dependancies[key] === 'undefined' ? [undefined, undefined] : this.dependancies[key];
@@ -97,7 +98,7 @@ class Config extends EventEmitter {
 	
 			const question = typeof this.questions[key] === 'undefined' ? 'Please enter a value for' : this.questions[key];
 	
-			this.logger.force(`${question} (${this.logger.y}${key}${this.logger.reset})`, ['H', '', this.logger.c]); // Ask question
+			this.logger.force(`${question} (${this.logger.y}${key}${this.logger.reset})`, [this.logLevel, '', this.logger.c]); // Ask question
 			let input;
 	
 			if (this.required[key] === 'INFO') {
@@ -117,16 +118,16 @@ class Config extends EventEmitter {
 				'value': this.config[key]
 			});
 		}
-		this.logger.force('', ['H', '', this.logger.c]);
+		this.logger.force('', [this.logLevel, '', this.logger.c]);
 		this.print();
 		this.write(file);
-		this.logger.force('', ['H', '', this.logger.c]);
-		this.logger.force('Finished configuration', ['H', 'CONFIG', this.logger.c]);
+		this.logger.force('', [this.logLevel, '', this.logger.c]);
+		this.logger.force('Finished configuration', [this.logLevel, 'CONFIG', this.logger.c]);
 	}
 
 	async fromAPI(file = 'config.conf', requestFunction, doneFunction) {
-		this.logger.force('Entering configuration', ['H', 'CONFIG', this.logger.c]);
-		this.logger.force('', ['H', '', this.logger.c]);
+		this.logger.force('Entering configuration', [this.logLevel, 'CONFIG', this.logger.c]);
+		this.logger.force('', [this.logLevel, '', this.logger.c]);
 		for (const key in this.required) {
 			if (!Object.hasOwnProperty.call(this.required, key)) continue;
 			const [dependant, value] = typeof this.dependancies[key] === 'undefined' ? [undefined, undefined] : this.dependancies[key];
@@ -134,7 +135,7 @@ class Config extends EventEmitter {
 	
 			const question = typeof this.questions[key] === 'undefined' ? 'Please enter a value for' : this.questions[key];
 	
-			this.logger.force(`${question} (${this.logger.y}${key}${this.logger.reset})`, ['H', '', this.logger.c]); // Ask question
+			this.logger.force(`${question} (${this.logger.y}${key}${this.logger.reset})`, [this.logLevel, '', this.logger.c]); // Ask question
 			let input;
 	
 			if (this.required[key] === 'INFO') {
@@ -142,12 +143,12 @@ class Config extends EventEmitter {
 				continue;
 			} else if (typeof this.required[key] !== 'undefined') { // If choices are specified print them
 				if ((Array.isArray(this.required[key]) && this.required[key].length > 0 ) || Object.keys(this.required[key]).length > 0) {
-					input = requestFunction(question, this.get(key), this.required[key])
+					input = requestFunction(question, this.get(key), this.required[key]);
 				} else {
-					input = requestFunction(question, this.get(key))
+					input = requestFunction(question, this.get(key));
 				}
 			} else {
-				input = requestFunction(question, this.get(key))
+				input = requestFunction(question, this.get(key));
 			}
 			this.config[key] = await input;
 			this.emit('set', {
@@ -155,11 +156,11 @@ class Config extends EventEmitter {
 				'value': this.config[key]
 			});
 		}
-		this.logger.force('', ['H', '', this.logger.c]);
+		this.logger.force('', [this.logLevel, '', this.logger.c]);
 		this.print();
 		this.write(file);
-		this.logger.force('', ['H', '', this.logger.c]);
-		this.logger.force('Finished configuration', ['H', 'CONFIG', this.logger.c]);
+		this.logger.force('', [this.logLevel, '', this.logger.c]);
+		this.logger.force('Finished configuration', [this.logLevel, 'CONFIG', this.logger.c]);
 		doneFunction();
 	}
 
@@ -169,8 +170,7 @@ class Config extends EventEmitter {
 				recursive: true
 			});
 		}
-		this.logger.force('', ['H', '', this.logger.c]);
-		this.logger.force(`Saving configuration to ${this.logger.c}${path.join(this.filePath, file)}${this.logger.reset}`, ['H', 'CONFIG', this.logger.c]);
+		this.logger.force(`Saving configuration to ${this.logger.c}${path.join(this.filePath, file)}${this.logger.reset}`, [this.logLevel, 'CONFIG', this.logger.c]);
 		fs.writeFileSync(path.join(this.filePath, file), JSON.stringify(this.all()));
 	}
 
@@ -181,8 +181,8 @@ class Config extends EventEmitter {
 				recursive: true
 			});
 		}
-		this.logger.force('', ['H', '', this.logger.c]);
-		this.logger.force(`Saving configuration to ${this.logger.c}${filePath}/${property}.json${this.logger.reset}`, ['H', 'CONFIG', this.logger.c]);
+		// this.logger.force('', [this.logLevel, '', this.logger.c]);
+		this.logger.force(`Saving configuration to ${this.logger.c}${filePath}/${property}.json${this.logger.reset}`, [this.logLevel, 'CONFIG', this.logger.c]);
 		fs.writeFileSync(`${filePath}/${property}.json`, JSON.stringify(this.config[property], null, 4));
 	}
 
@@ -236,15 +236,15 @@ class Config extends EventEmitter {
 	doExitCheck() {
 		this.logger.pause();
 	
-		this.logger.force('Are you sure you want to exit? (y, n)', ['H', '', this.logger.r]);
+		this.logger.force('Are you sure you want to exit? (y, n)', [this.logLevel, '', this.logger.r]);
 	
 		const [onInput, reader] = this.logger.input('yes', this.logger.r);
 		onInput.then((input)=>{
 			if (input.match(/^y(es)?$/i) || input == '') {
-				this.logger.force('Process exited by user command', ['H','SERVER',this.logger.r]);
+				this.logger.force('Process exited by user command', [this.logLevel,'SERVER',this.logger.r]);
 				process.exit();
 			} else {
-				this.logger.force('Exit canceled', ['H','SERVER',this.logger.g]);
+				this.logger.force('Exit canceled', [this.logLevel,'SERVER',this.logger.g]);
 				this.logger.resume();
 				return this.userInput();
 			}
@@ -267,7 +267,7 @@ class Config extends EventEmitter {
 				'lineNumString': ''
 			}, true);
 
-			this.logger.force('Process exited by user command', ['H','SERVER',this.logger.r]);
+			this.logger.force('Process exited by user command', [this.logLevel,'SERVER',this.logger.r]);
 			process.exit();
 		});
 	}
@@ -275,7 +275,8 @@ class Config extends EventEmitter {
 	set(property, value) {
 		this.config[property] = typeof value === 'undefined' ? this.defaults[property] : value;
 		if (Object.keys(this.objects).includes(property)) {
-			this.writeObject(property)
+			this.#checkObject(property);
+			this.writeObject(property);
 		} else {
 			this.write();
 			this.emit('set', {
@@ -288,7 +289,7 @@ class Config extends EventEmitter {
 	get(property, filter) {
 		const value = typeof this.config[property] === 'undefined' ? this.defaults[property] : this.config[property];
 		if (Object.keys(this.objects).includes(property)) {
-			const object = this.objects[property]
+			const object = this.objects[property];
 			if (filter !== undefined) return value.filter(item => item[object.filter] == filter);
 			else return value;
 		} else {
@@ -300,13 +301,13 @@ class Config extends EventEmitter {
 		const allConfig = {};
 		for (const property in this.defaults) {
 			if (Object.hasOwnProperty.call(this.defaults, property) && typeof this.defaults[property] !== 'function') {
-				if (Object.keys(this.objects).includes(property)) continue
+				if (Object.keys(this.objects).includes(property)) continue;
 				allConfig[property] = this.defaults[property];
 			}
 		}
 		for (const property in this.config) {
 			if (Object.hasOwnProperty.call(this.config, property) && typeof this.config[property] !== 'function') {
-				if (Object.keys(this.objects).includes(property)) continue
+				if (Object.keys(this.objects).includes(property)) continue;
 				allConfig[property] = this.get(property);
 			}
 		}
@@ -337,13 +338,13 @@ class Config extends EventEmitter {
 			if (typeof printFunction !== 'undefined') {
 				printFunction(`Configuration option ${this.logger.y}${key}${this.logger.reset} has been set to: ${this.logger.c}${this.get(key)}${this.logger.reset}`);
 			}
-			this.logger.force(`Configuration option ${this.logger.y}${key}${this.logger.reset} has been set to: ${this.logger.c}${this.get(key)}${this.logger.reset}`, ['H', 'CONFIG', this.logger.c]);
+			this.logger.force(`Configuration option ${this.logger.y}${key}${this.logger.reset} has been set to: ${this.logger.c}${this.get(key)}${this.logger.reset}`, [this.logLevel, 'CONFIG', this.logger.c]);
 		}
 	}
 
 	async object(definition, defaults) {
-		this.objects[definition.property] = definition
-		this.defaults[definition.property] = defaults
+		this.objects[definition.property] = definition;
+		this.defaults[definition.property] = defaults;
 		const filePath = path.join(this.filePath, '/data');
 
 		if (!fs.existsSync(filePath)) {
@@ -359,9 +360,26 @@ class Config extends EventEmitter {
 			} catch (error) {
 				this.config[definition.property] = defaults;
 				this.logger.log(`There is an error with the config file at ${path.join(filePath, `${definition.property}.json`)}, loading defaults`, 'W');
-				this.writeObject(definition.property)
+				this.writeObject(definition.property);
 			}
 		}
+	}
+
+	#checkObject(property) {
+		const values = this.config[property];
+		const def = this.objects[property];
+		values.forEach((value, index) => {
+			for (const key in def.options) {
+				if (!Object.prototype.hasOwnProperty.call(def.options, key)) continue;
+				if (def.options[key].default === undefined) continue;
+				if (value[key] !== undefined) continue;
+				this.config[property][index][key] = def.options[key].default;
+			}
+		});
+	}
+
+	logLevel(value = 'H') {
+		this.logLevel = value;
 	}
 }
 

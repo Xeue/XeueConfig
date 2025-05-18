@@ -76,4 +76,8 @@ export class Config extends EventEmitter {
         definition: any,
         defaults: any
     ): void;
+
+    logLevel(
+        level?: string,
+    ): void;
 }
