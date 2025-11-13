@@ -63,7 +63,6 @@ export class Config extends EventEmitter {
 
     //Create config from CLI entry
     async fromCLI(file = 'config.conf', timeoutSeconds = 0) {
-        console.log(process.stdout.isTTY);
         if (!process.stdout.isTTY) {
             this.write(file);
             return;
