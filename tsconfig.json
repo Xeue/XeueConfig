@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "allowArbitraryExtensions": true,
+        "declaration": true,
+        "declarationMap": true,
+        "lib": [
+            "ES2022"
+        ],
+        "module": "NodeNext",
+        "outDir": "./dist",
+        "resolveJsonModule": true,
+        "rewriteRelativeImportExtensions": true,
+        "target": "es2022",
+        "forceConsistentCasingInFileNames": true,
+        "strict": true
+    },
+    // These may be different for your repo:
+    "include": [
+        "./src"
+    ],
+    "exclude": [
+        "**/*/*.test.*",
+        "**/*.fixture.*"
+    ]
+}

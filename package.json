@@ -1,10 +1,12 @@
 {
   "name": "xeue-config",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "description": "Small utility for creating and managing node configs",
-  "main": "config.js",
+  "main": "dist/config.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepack": "tsc",
+    "types:check": "tsc --noEmit"
   },
   "repository": {
     "type": "git",
@@ -20,9 +22,11 @@
   },
   "homepage": "https://github.com/Xeue/XeueConfig#readme",
   "dependencies": {
-    "xeue-logs": "^2.0.0"
+    "xeue-logs": "^3.1.0"
   },
   "devDependencies": {
-    "eslint": "^8.30.0"
+    "@types/node": "^24.10.1",
+    "eslint": "^8.30.0",
+    "typescript": "^5.9.3"
   }
 }
