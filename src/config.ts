@@ -431,6 +431,11 @@ export class Config extends EventEmitter {
         }
         if (options.Question) {
             this.questions[property] = options.Question;
+            if (options.Values) {
+                this.required[property] = options.Values;
+            } else {
+                this.required[property] = [];
+            }
         }
         if (options.Values) {
             this.required[property] = options.Values;
