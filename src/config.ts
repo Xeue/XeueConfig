@@ -216,7 +216,7 @@ export class Config extends EventEmitter {
                 'textColour': this.Logs.w,
                 'levelText': '',
                 'levelTextColour': this.Logs.c,
-                'seperator': '      |',
+                'seperator': '|',
                 'text': input,
                 'lineNum': ''
             }, true);
@@ -282,7 +282,7 @@ export class Config extends EventEmitter {
                 'levelText': '',
                 'levelTextColour': this.Logs.r,
                 'textColour': this.Logs.c,
-                'seperator': '      |',
+                'seperator': '|',
                 'text': 'yes',
                 'lineNum': ''
             }, true);
