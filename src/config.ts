@@ -464,7 +464,7 @@ type DefineOptions = {
 
 interface DefineOptionsNonObject extends DefineOptions {
     ObjectDefinition?: undefined
-    Default?: string
+    Default?: string | number | boolean
 }
 
 interface DefineOptionsObject extends DefineOptions {
